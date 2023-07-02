@@ -7,21 +7,27 @@ export async function POST(request: NextRequest) {
     const headers = {
         authorization: process.env.NEXT_PUBLIC_ASSEMBLYAI_API_KEY
     }
+    try {
 
-    const data = await request.formData();
-    const file: File | null = data.get("file") as unknown as File;
 
-    if (!file) {
-        return NextResponse.json({ success: false });
+        const data = await request.formData();
+        const file: File | null = data.get("file") as unknown as File;
+
+        // console.log(data)
+
+        if (!file) {
+            return NextResponse.json({ success: false });
+        }
+
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+
+        const response = await axios.post(`${base_url}/upload`, buffer, { headers })
+        const upload_url = response.data.upload_url
+        return NextResponse.json({ success: true, upload_url });
     }
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-
-    const response = await axios.post(`${base_url}/upload`, data, { headers })
-    const upload_url = response.data.upload_url
-
-
-    return NextResponse.json({ success: true, upload_url });
+    catch (error) {
+        console.log(error)
+    }
 }
